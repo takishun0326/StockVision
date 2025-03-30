@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import StockChart from "./StockChart";
+import Hoge from "./Hoge";
 
 const App: React.FC = () => {
   return (
     <div>
       <h1>株価チャート</h1>
       <StockChart />
+      <Hoge />
     </div>
   );
 };
