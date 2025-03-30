@@ -1,40 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
+import { useStockData } from "../../hooks/useStockData";
 
-// [日付, 安値, 高値, 始値, 終値]
-// [date, open, close, high, low]
-type StockData = [string, number, number, number, number];
-
-const sampleData: StockData[] = [
-    ["2024-03-18", 150, 170, 155, 165],
-    ["2024-03-19", 160, 180, 165, 175],
-    ["2024-03-20", 170, 190, 175, 185],
-    ["2024-03-21", 180, 200, 185, 195],
-    ["2024-03-22", 190, 210, 195, 205],
-    ["2024-03-23", 195, 215, 200, 210],
-    ["2024-03-24", 200, 220, 205, 215],
-    ["2024-03-25", 190, 210, 200, 195], // 陰線
-    ["2024-03-26", 185, 205, 190, 180], // 陰線
-    ["2024-03-27", 175, 195, 180, 170], // 陰線
-    ["2024-03-28", 165, 185, 170, 180], // 陽線
-    ["2024-03-29", 180, 200, 185, 190], // 陽線
-    ["2024-03-30", 190, 210, 195, 200], // 陽線
-];
+// const sampleData: StockData[] = [
+//     ["2024-03-18", 150, 170, 155, 165],
+//     ["2024-03-19", 160, 180, 165, 175],
+//     ["2024-03-20", 170, 190, 175, 185],
+//     ["2024-03-21", 180, 200, 185, 195],
+//     ["2024-03-22", 190, 210, 195, 205],
+//     ["2024-03-23", 195, 215, 200, 210],
+//     ["2024-03-24", 200, 220, 205, 215],
+//     ["2024-03-25", 190, 210, 200, 195], // 陰線
+//     ["2024-03-26", 185, 205, 190, 180], // 陰線
+//     ["2024-03-27", 175, 195, 180, 170], // 陰線
+//     ["2024-03-28", 165, 185, 170, 180], // 陽線
+//     ["2024-03-29", 180, 200, 185, 190], // 陽線
+//     ["2024-03-30", 190, 210, 195, 200], // 陽線
+// ];
 
 // 移動平均 (MA) の計算
-const calculateMA = (days: number) => {
-    return sampleData.map((_, i) => {
-        if (i < days - 1) return null;
-        const sum = sampleData.slice(i - days + 1, i + 1).reduce((acc, d) => acc + d[4], 0);
-        return sum / days;
-    });
-};
-
-const ma5 = calculateMA(5);
-const ma10 = calculateMA(10);
-const ma20 = calculateMA(20);
 
 const StockChart: React.FC = () => {
+    const { stockData, loading, error } = useStockData("");
+
+    const calculateMA = (days: number) => {
+        if (!stockData || stockData.length === 0) return []; // データがない場合の処理
+
+        return stockData.map((_, i) => {
+            if (i < days - 1) return null;
+            // Close株価をもとに計算
+            const sum = stockData.slice(i - days + 1, i + 1).reduce((acc, d) => acc + d.close, 0);
+            return sum / days;
+        });
+    };
+
+    const ma5 = calculateMA(5);
+    const ma10 = calculateMA(10);
+    const ma20 = calculateMA(20);
+
     const option = {
         legend: {
             data: ["日K", "MA5", "MA10", "MA20"],
@@ -54,7 +57,7 @@ const StockChart: React.FC = () => {
         },
         xAxis: {
             type: "category",
-            data: sampleData.map((d) => d[0]),
+            data: stockData.map((d) => d.date),
             axisLine: { lineStyle: { color: "#8392A5" } },
         },
         yAxis: {
@@ -84,7 +87,7 @@ const StockChart: React.FC = () => {
             {
                 type: "candlestick",
                 name: "日K",
-                data: sampleData.map((d) => [d[3], d[4], d[1], d[2]]), // [安値, 高値, 始値, 終値]
+                data: stockData.map((d) => [d.open, d.close, d.low, d.high]), // [安値, 高値, 始値, 終値]
                 itemStyle: {
                     color: "#0CF49B", // 陽線
                     color0: "#FD1050", // 陰線
@@ -116,7 +119,9 @@ const StockChart: React.FC = () => {
         ],
     };
 
-    return <ReactECharts option={option} style={{ height: 500, width: "100%" }} />;
+    if (true) return <ReactECharts option={option} style={{ height: 500, width: "100%" }} />;
+
+    return <p>"だめでした"</p>;
 };
 
 export default StockChart;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import StockChart from "./StockChart";
+import StockChart from "./components/charts/StockChart";
 import Hoge from "./Hoge";
 
 const App: React.FC = () => {
